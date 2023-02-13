@@ -30,3 +30,15 @@
 - I'll be doing a lot of string parsing. This page is going to be very relevant:
 	https://doc.rust-lang.org/book/ch08-02-strings.html#storing-utf-8-encoded-text-with-strings
 
+- I'm getting some bugs when I try to simulate key presses in enigo related to transmute_copy()
+	- These people have the same kind of issue:
+		https://stackoverflow.com/questions/74882452/thread-panicking-when-simulating-keypresses-in-using-enigo
+
+		- It looks like I'll have to patch to the latest checkin of enigo
+			https://github.com/enigo-rs/enigo/issues/121
+
+			- I put my cloned copy here:
+				D:\Rust_Downloaded_GitHub\enigo
+	
+	- The other option is to find another library entirely to use
+
