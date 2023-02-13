@@ -1,0 +1,32 @@
+- It seems that these two Rust packages are good for doing clicks and listening to input:
+	enigo
+		https://github.com/enigo-rs/enigo
+			- This one is also being updated regularly
+
+	inputbot
+		
+
+	https://www.youtube.com/watch?v=2s0hEYsS7kI&ab_channel=VahinSharma
+
+- There's also a reddit thread too about options:
+	https://www.reddit.com/r/rust/comments/aaft23/rust_equivalent_of_javas_robot_api/
+
+
+- I'll use inputbot to start with, since it's the most recently updated one I found
+	https://github.com/obv-mikhail/inputbot
+
+	- This may not suit my particular needs, actually.
+
+- There's actually a few ways to do an auto scripted robot:
+	- As soon as the program starts, read a file and then do stuff based on the file
+		- Optionally repeat some amount of times or until a specific key
+
+	- As soon as the program starts, read a file to figure out the key press sequence
+		- Once a specific key is pressed, then execute the key press sequence which was read earlier
+			- Could be executed once
+			- Could be executed as long as the key is held
+			- Could be executed forever until I press the key again
+
+- I'll be doing a lot of string parsing. This page is going to be very relevant:
+	https://doc.rust-lang.org/book/ch08-02-strings.html#storing-utf-8-encoded-text-with-strings
+
