@@ -128,98 +128,58 @@ impl ParsedCommand {
         return (ParsedCommand::Wait(1), ParseResult::Fail);
     }
 
+    fn parse_command_substring(line: &String) -> (ParsedCommand, ParseResult) {
+        let mut parse_fn: fn(&str) -> (ParsedCommand, ParseResult) = ParsedCommand::parse_wait;
+        let mut beginning_sequence: &str = "";
+        
+        if line.starts_with("key_sequence: ") {
+            parse_fn = ParsedCommand::parse_key_sequence;
+            beginning_sequence = "key_sequence: ";
+        }
+        else if line.starts_with("layout_key: ") {
+            parse_fn = ParsedCommand::parse_layout_key;
+            beginning_sequence = "layout_key: ";
+        }
+        else if line.starts_with("wait: ") {
+            parse_fn = ParsedCommand::parse_wait;
+            beginning_sequence = "wait: ";
+        }
+        else if line.starts_with("mouse_click: ") {
+            parse_fn = ParsedCommand::parse_mouse_click;
+            beginning_sequence = "mouse_click: ";
+        }
+        else if line.starts_with("mouse_down: ") {
+            parse_fn = ParsedCommand::parse_mouse_down;
+            beginning_sequence = "mouse_down: ";
+        }
+        else if line.starts_with("mouse_release: ") {
+            parse_fn = ParsedCommand::parse_mouse_release;
+            beginning_sequence = "mouse_release: ";
+        }
+        else if line.starts_with("mouse_move: ") {
+            parse_fn = ParsedCommand::parse_mouse_move;
+            beginning_sequence = "mouse_move: ";
+        }
+        
+        println!("parse_command_from_line: read {}", beginning_sequence);
+
+        let split_line: Vec<&str> = line.split(beginning_sequence).collect();
+
+        for split in &split_line {
+            println!("{}", split);
+        }
+
+        if split_line.len() == 2 {
+            return parse_fn(split_line[1]);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
 }
 
 pub fn parse_command_from_line(line: &String) -> ParsedCommand{
-    let mut return_parse: ParsedCommand = ParsedCommand::Wait(1);
-    let mut parse_result: ParseResult = ParseResult::Fail;
-
-    if line.starts_with("key_sequence: ") {
-        println!("parse_command_from_line: read key_sequence");
-
-        let split_line: Vec<&str> = line.split("key_sequence: ").collect();
-        
-        for split in &split_line {
-            println!("{}", split);
-        }
-
-        if split_line.len() == 2 {
-            (return_parse, parse_result) = ParsedCommand::parse_key_sequence(split_line[1]);
-        }
-    }
-    if line.starts_with("layout_key: ") {
-        println!("parse_command_from_line: read layout_key");
-
-        let split_line: Vec<&str> = line.split("layout_key: ").collect();
-        
-        for split in &split_line {
-            println!("{}", split);
-        }
-
-        if split_line.len() == 2 {
-            (return_parse, parse_result) = ParsedCommand::parse_layout_key(split_line[1]);
-        } 
-    }
-    else if line.starts_with("wait: ") {
-        println!("parse_command_from_line: wait");
-        let split_line: Vec<&str> = line.split("wait: ").collect();
-
-        for split in &split_line {
-            println!("{}", split);
-        }
-
-        if split_line.len() == 2 {
-            (return_parse, parse_result) = ParsedCommand::parse_wait(split_line[1]);
-        }
-    }
-    else if line.starts_with("mouse_click: ") {
-        println!("parse_command_from_line: mouse_click");
-        let split_line: Vec<&str> = line.split("mouse_click: ").collect();
-
-        for split in &split_line {
-            println!("{}", split);
-        }
-
-        if split_line.len() == 2 {
-            (return_parse, parse_result) = ParsedCommand::parse_mouse_click(split_line[1]);
-        }
-    }
-    else if line.starts_with("mouse_down: ") {
-        println!("parse_command_from_line: mouse_down");
-        let split_line: Vec<&str> = line.split("mouse_down: ").collect();
-
-        for split in &split_line {
-            println!("{}", split);
-        }
-
-        if split_line.len() == 2 {
-            (return_parse, parse_result) = ParsedCommand::parse_mouse_down(split_line[1]);
-        }
-    }
-    else if line.starts_with("mouse_release: ") {
-        println!("parse_command_from_line: mouse_release");
-        let split_line: Vec<&str> = line.split("mouse_release: ").collect();
-
-        for split in &split_line {
-            println!("{}", split);
-        }
-
-        if split_line.len() == 2 {
-            (return_parse, parse_result) = ParsedCommand::parse_mouse_release(split_line[1]);
-        }
-    }
-    else if line.starts_with("mouse_move: ") {
-        println!("parse_command_from_line: mouse_move");
-        let split_line: Vec<&str> = line.split("mouse_move: ").collect();
-
-        for split in &split_line {
-            println!("{}", split);
-        }
-
-        if split_line.len() == 2 {
-            (return_parse, parse_result) = ParsedCommand::parse_mouse_move(split_line[1]);
-        }
-    }
+    let (return_parse, parse_result) = ParsedCommand::parse_command_substring(line);
 
     match parse_result{
         ParseResult::Fail => {
@@ -230,5 +190,4 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
             return return_parse;
         }
     }
-
 }
