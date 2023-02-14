@@ -16,7 +16,124 @@ pub enum ParsedCommand {
     Wait(u64)
 }
 
+enum ParseResult {
+    Fail,
+    Success
+}
+
+impl ParsedCommand {
+    fn parse_key_sequence(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        if !cmd_string.is_empty()
+        {
+            return (ParsedCommand::KeySequence(String::from(cmd_string)), ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_layout_key(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let split_line_key_and_action: Vec<&str> = cmd_string.split(" ").collect();
+
+        if split_line_key_and_action.len() == 2 {
+            let parse_result_char = split_line_key_and_action[0].parse::<char>();
+            let parsed_button_action = split_line_key_and_action[1];
+
+            let mut button_action: ButtonAction = ButtonAction::None;
+            if parsed_button_action == "release" {
+                button_action = ButtonAction::Release;
+            }
+            else if parsed_button_action == "press" {
+                button_action = ButtonAction::Press;
+            }
+
+            if let Ok(key) = parse_result_char {
+                match button_action
+                {
+                    ButtonAction::None => {},
+                    _ => { return (ParsedCommand::LayoutKeyUse(key, button_action), ParseResult::Success);}
+                }
+            }
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_wait(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let parse_result = cmd_string.parse::<u64>();
+
+        if let Ok(wait_time) = parse_result {
+            return (ParsedCommand::Wait(wait_time), ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_mouse_click(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let button_specifier = String::from(cmd_string);
+        if button_specifier == "left" {
+            return (ParsedCommand::MouseClick(MouseButton::Left), ParseResult::Success);
+        }
+        if button_specifier == "right" {
+            return (ParsedCommand::MouseClick(MouseButton::Right), ParseResult::Success);
+        }
+        if button_specifier == "middle" {
+            return (ParsedCommand::MouseClick(MouseButton::Middle), ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_mouse_down(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let button_specifier = String::from(cmd_string);
+        if button_specifier == "left" {
+            return (ParsedCommand::MouseDown(MouseButton::Left), ParseResult::Success);
+        }
+        if button_specifier == "right" {
+            return (ParsedCommand::MouseDown(MouseButton::Right), ParseResult::Success);
+        }
+        if button_specifier == "middle" {
+            return (ParsedCommand::MouseDown(MouseButton::Middle), ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_mouse_release(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let button_specifier = String::from(cmd_string);
+        if button_specifier == "left" {
+            return (ParsedCommand::MouseRelease(MouseButton::Left), ParseResult::Success);
+        }
+        if button_specifier == "right" {
+            return (ParsedCommand::MouseRelease(MouseButton::Right), ParseResult::Success);
+        }
+        if button_specifier == "middle" {
+            return (ParsedCommand::MouseRelease(MouseButton::Middle), ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_mouse_move(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let split_line_coordinates: Vec<&str> = cmd_string.split(" ").collect();
+
+        if split_line_coordinates.len() == 2 {
+            let parse_result_x = split_line_coordinates[0].parse::<i32>();
+            let parse_result_y = split_line_coordinates[1].parse::<i32>();
+
+            if let (Ok(x), Ok(y)) = (parse_result_x, parse_result_y) {
+                return (ParsedCommand::MouseMove{x, y}, ParseResult::Success);
+            }
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+}
+
 pub fn parse_command_from_line(line: &String) -> ParsedCommand{
+    let mut return_parse: ParsedCommand = ParsedCommand::Wait(1);
+    let mut parse_result: ParseResult = ParseResult::Fail;
+
     if line.starts_with("key_sequence: ") {
         println!("parse_command_from_line: read key_sequence");
 
@@ -27,10 +144,7 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
         }
 
         if split_line.len() == 2 {
-            return ParsedCommand::KeySequence(String::from(split_line[1]));
-        } 
-        else {
-            println!("The line is not formatted properly, not using it as a command");
+            (return_parse, parse_result) = ParsedCommand::parse_key_sequence(split_line[1]);
         }
     }
     if line.starts_with("layout_key: ") {
@@ -43,38 +157,8 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
         }
 
         if split_line.len() == 2 {
-            let split_line_key_and_action: Vec<&str> = split_line[1].split(" ").collect();
-
-            if split_line_key_and_action.len() == 2 {
-                let parse_result_char = split_line_key_and_action[0].parse::<char>();
-                let parsed_button_action = split_line_key_and_action[1];
-
-                let mut button_action: ButtonAction = ButtonAction::None;
-                if parsed_button_action == "release" {
-                    button_action = ButtonAction::Release;
-                }
-                else if parsed_button_action == "press" {
-                    button_action = ButtonAction::Press;
-                }
-
-                if let Ok(key) = parse_result_char {
-                    match button_action
-                    {
-                        ButtonAction::None => { println!("The line is not formatted properly, not using it as a command"); },
-                        _ => { return ParsedCommand::LayoutKeyUse(key, button_action);}
-                    }
-                }
-                else {
-                    println!("The line is not formatted properly, not using it as a command");
-                }
-            }
-            else {
-                println!("The line is not formatted properly, not using it as a command");
-            }
+            (return_parse, parse_result) = ParsedCommand::parse_layout_key(split_line[1]);
         } 
-        else {
-            println!("The line is not formatted properly, not using it as a command");
-        }
     }
     else if line.starts_with("wait: ") {
         println!("parse_command_from_line: wait");
@@ -85,17 +169,7 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
         }
 
         if split_line.len() == 2 {
-            let parse_result = split_line[1].parse::<u64>();
-
-            if let Ok(wait_time) = parse_result {
-                return ParsedCommand::Wait(wait_time);
-            } 
-            else {
-                println!("The line is not formatted properly, not using it as a command");
-            }
-        }
-        else {
-            println!("The line is not formatted properly, not using it as a command");
+            (return_parse, parse_result) = ParsedCommand::parse_wait(split_line[1]);
         }
     }
     else if line.starts_with("mouse_click: ") {
@@ -107,22 +181,7 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
         }
 
         if split_line.len() == 2 {
-            let button_specifier = String::from(split_line[1]);
-            if button_specifier == "left" {
-                return ParsedCommand::MouseClick(MouseButton::Left);
-            }
-            if button_specifier == "right" {
-                return ParsedCommand::MouseClick(MouseButton::Right);
-            }
-            if button_specifier == "middle" {
-                return ParsedCommand::MouseClick(MouseButton::Middle);
-            }
-            else {
-                println!("The line is not formatted properly, not using it as a command");
-            }
-        }
-        else {
-            println!("The line is not formatted properly, not using it as a command");
+            (return_parse, parse_result) = ParsedCommand::parse_mouse_click(split_line[1]);
         }
     }
     else if line.starts_with("mouse_down: ") {
@@ -134,22 +193,7 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
         }
 
         if split_line.len() == 2 {
-            let button_specifier = String::from(split_line[1]);
-            if button_specifier == "left" {
-                return ParsedCommand::MouseDown(MouseButton::Left);
-            }
-            if button_specifier == "right" {
-                return ParsedCommand::MouseDown(MouseButton::Right);
-            }
-            if button_specifier == "middle" {
-                return ParsedCommand::MouseDown(MouseButton::Middle);
-            }
-            else {
-                println!("The line is not formatted properly, not using it as a command");
-            }
-        }
-        else {
-            println!("The line is not formatted properly, not using it as a command");
+            (return_parse, parse_result) = ParsedCommand::parse_mouse_down(split_line[1]);
         }
     }
     else if line.starts_with("mouse_release: ") {
@@ -161,22 +205,7 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
         }
 
         if split_line.len() == 2 {
-            let button_specifier = String::from(split_line[1]);
-            if button_specifier == "left" {
-                return ParsedCommand::MouseRelease(MouseButton::Left);
-            }
-            if button_specifier == "right" {
-                return ParsedCommand::MouseRelease(MouseButton::Right);
-            }
-            if button_specifier == "middle" {
-                return ParsedCommand::MouseRelease(MouseButton::Middle);
-            }
-            else {
-                println!("The line is not formatted properly, not using it as a command");
-            }
-        }
-        else {
-            println!("The line is not formatted properly, not using it as a command");
+            (return_parse, parse_result) = ParsedCommand::parse_mouse_release(split_line[1]);
         }
     }
     else if line.starts_with("mouse_move: ") {
@@ -188,27 +217,18 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
         }
 
         if split_line.len() == 2 {
-            let split_line_coordinates: Vec<&str> = split_line[1].split(" ").collect();
-
-            if split_line_coordinates.len() == 2 {
-                let parse_result_x = split_line_coordinates[0].parse::<i32>();
-                let parse_result_y = split_line_coordinates[1].parse::<i32>();
-
-                if let (Ok(x), Ok(y)) = (parse_result_x, parse_result_y) {
-                    return ParsedCommand::MouseMove{x, y};
-                }
-                else {
-                    println!("The line is not formatted properly, not using it as a command");
-                }
-            }
-            else {
-                println!("The line is not formatted properly, not using it as a command");
-            }
-        }
-        else {
-            println!("The line is not formatted properly, not using it as a command");
+            (return_parse, parse_result) = ParsedCommand::parse_mouse_move(split_line[1]);
         }
     }
 
-    return ParsedCommand::Wait(1);
+    match parse_result{
+        ParseResult::Fail => {
+            println!("The line is not formatted properly, not using it as a command");
+            return ParsedCommand::Wait(1);
+        },
+        _ => {
+            return return_parse;
+        }
+    }
+
 }
