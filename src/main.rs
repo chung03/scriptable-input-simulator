@@ -79,10 +79,26 @@ fn execute_commands(command_vector: Vec<ParsedCommand>) {
                     ButtonAction::Release => {
                         enigo.key_up(Key::Layout(key));
                     },
-                    ButtonAction::None => { println!("This should not happen!"); }
+                    ButtonAction::Click => {
+                        enigo.key_click(Key::Layout(key));
+                    },
+                    ButtonAction::None => { println!("This should not happen! Doing nothing"); }
                 }
              },
-            ParsedCommand::SpecialKeyUse(key, button_action) => { println!("SpecialKeyUse unimplemented"); },
+            ParsedCommand::SpecialKeyUse(key, button_action) => { 
+                match button_action {
+                    ButtonAction::Press => {
+                        enigo.key_down(key);
+                    },
+                    ButtonAction::Release => {
+                        enigo.key_up(key);
+                    },
+                    ButtonAction::Click => {
+                        enigo.key_click(key);
+                    },
+                    ButtonAction::None => { println!("This should not happen! Doing nothing"); }
+                } 
+            },
             ParsedCommand::KeySequence(sequence) => {
                 enigo.key_sequence(sequence.as_str());
             },

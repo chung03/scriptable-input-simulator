@@ -1,8 +1,10 @@
 use enigo::*;
+use phf::phf_map;
 
 pub enum ButtonAction {
     Press,
     Release,
+    Click,
     None
 }
 pub enum ParsedCommand {
@@ -20,6 +22,50 @@ enum ParseResult {
     Fail,
     Success
 }
+
+static STR_TO_ENIGO_KEY_MAP: phf::Map<&str, enigo::Key> = phf_map! {
+    "alt" => Key::Alt,
+    "back_space" => Key::Backspace,
+    "caps_lock" => Key::CapsLock,
+    "control" => Key::Control,
+    "delete" => Key::Delete,
+    "down_arrow" => Key::DownArrow,
+    "end" => Key::End,
+    "escape" => Key::Escape,
+    "f1" => Key::F1,
+    "f2" => Key::F2,
+    "f3" => Key::F3,
+    "f4" => Key::F4,
+    "f5" => Key::F5,
+    "f6" => Key::F6,
+    "f7" => Key::F7,
+    "f8" => Key::F8,
+    "f9" => Key::F9,
+    "f10" => Key::F10,
+    "f11" => Key::F11,
+    "f12" => Key::F12,
+    "f13" => Key::F13,
+    "f14" => Key::F14,
+    "f15" => Key::F15,
+    "f16" => Key::F16,
+    "f17" => Key::F17,
+    "f18" => Key::F18,
+    "f19" => Key::F19,
+    "f20" => Key::F20,
+    "home" => Key::Home,
+    "left_arrow" => Key::LeftArrow,
+    "meta" => Key::Meta,
+    "option" => Key::Option,
+    "page_down" => Key::PageDown,
+    "page_up" => Key::PageUp,
+    "return" => Key::Return,
+    "right_arrow" => Key::RightArrow,
+    "shift" => Key::Shift,
+    "space" => Key::Space,
+    "tab" => Key::Tab,
+    "up_arrow" => Key::UpArrow
+};
+
 
 impl ParsedCommand {
     fn parse_key_sequence(cmd_string: &str) -> (ParsedCommand, ParseResult) {
@@ -45,12 +91,45 @@ impl ParsedCommand {
             else if parsed_button_action == "press" {
                 button_action = ButtonAction::Press;
             }
+            else if parsed_button_action == "click" {
+                button_action = ButtonAction::Click;
+            }
 
             if let Ok(key) = parse_result_char {
                 match button_action
                 {
                     ButtonAction::None => {},
                     _ => { return (ParsedCommand::LayoutKeyUse(key, button_action), ParseResult::Success);}
+                }
+            }
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_function_key(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let split_line_key_and_action: Vec<&str> = cmd_string.split(" ").collect();
+
+        if split_line_key_and_action.len() == 2 {
+            let parse_fn_key = split_line_key_and_action[0];
+            let parsed_button_action = split_line_key_and_action[1];
+
+            let mut button_action: ButtonAction = ButtonAction::None;
+            if parsed_button_action == "release" {
+                button_action = ButtonAction::Release;
+            }
+            else if parsed_button_action == "press" {
+                button_action = ButtonAction::Press;
+            }
+            else if parsed_button_action == "click" {
+                button_action = ButtonAction::Click;
+            }
+
+            if let Some(enigo_key) = STR_TO_ENIGO_KEY_MAP.get(parse_fn_key) {
+                match button_action
+                {
+                    ButtonAction::None => {},
+                    _ => { return (ParsedCommand::SpecialKeyUse(*enigo_key, button_action), ParseResult::Success);}
                 }
             }
         }
@@ -139,6 +218,10 @@ impl ParsedCommand {
         else if line.starts_with("layout_key: ") {
             parse_fn = ParsedCommand::parse_layout_key;
             beginning_sequence = "layout_key: ";
+        }
+        else if line.starts_with("function_key: ") {
+            parse_fn = ParsedCommand::parse_function_key;
+            beginning_sequence = "function_key: ";
         }
         else if line.starts_with("wait: ") {
             parse_fn = ParsedCommand::parse_wait;

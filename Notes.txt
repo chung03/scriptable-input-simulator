@@ -42,3 +42,12 @@
 	
 	- The other option is to find another library entirely to use
 
+- To make a static hashmap, I can use crates like the following:
+	https://docs.rs/lazy_static/1.4.0/lazy_static/
+	https://docs.rs/phf/latest/phf/
+
+	- It seems phf does exactly what I need
+		https://crates.io/crates/phf
+
+
+

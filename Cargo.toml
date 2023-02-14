@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 enigo = {path = "D:\\Rust_Downloaded_GitHub\\enigo", version = "0.0.14"}
+phf = { version = "0.11.1", features = ["macros"] }
