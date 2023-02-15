@@ -5,37 +5,43 @@ use std::io::*;
 use std::path::Path;
 use clap::Parser;
 use crate::command_types::*;
+use crate::command_executor::*;
 
 mod command_types;
+mod command_executor;
 
 
 #[derive(Parser)]
 #[command(author, version, about = "", long_about = None)]
 struct Cli {
-    #[arg(short, long, value_name = "file")]
-    file_name: String,
+    #[arg(short='f', long="file_name", value_name = "file")]
+    arg_file_name: String,
 
-    #[arg(short, long, value_name = "start_delay_ms")]
-    start_delay: Option<String>
+    #[arg(short='s', long="start_delay", value_name = "start_delay_ms", default_value_t=0)]
+    #[arg(long_help="The program will wait this long before executing the commands. This is in milliseconds")]
+    arg_start_delay: u64,
+
+    #[arg(short='t', long="times_to_execute_commands", value_name = "times_to_execute_commands", default_value_t=1)]
+    arg_times_to_execute_commands: u64
 }
 
 fn main() {
     println!("Reading arguments now");
 
     let args = Cli::parse();
-    let file_name = args.file_name;
+    let file_name = args.arg_file_name;
 
-    if let Some(start_delay) = args.start_delay {
-        if let Ok(parsed_time) = start_delay.parse::<u64>(){
-            let wait_before_start_ms: Duration = Duration::from_millis(parsed_time);
-            std::thread::sleep(wait_before_start_ms);
-        }
+    if args.arg_start_delay > 0 {
+        let start_delay: Duration = Duration::from_millis(args.arg_start_delay);
+        std::thread::sleep(start_delay);
     }
 
     let mut command_sequence: Vec<ParsedCommand> = vec![];
-
     read_input_file(&file_name, &mut command_sequence);
-    execute_commands(command_sequence);
+
+    for _i in 0.. args.arg_times_to_execute_commands {
+        command_executor::execute_commands(&command_sequence);
+    }
 }
 
 fn read_input_file(file_name: &String, command_vector: &mut Vec<ParsedCommand>) {
@@ -57,61 +63,5 @@ fn read_input_file(file_name: &String, command_vector: &mut Vec<ParsedCommand>) 
         Err(error_reason) => {
             panic!("The input file {} could not be read: {}", full_name.display(), error_reason);
         } 
-    }
-}
-
-fn execute_commands(command_vector: Vec<ParsedCommand>) {
-    let mut enigo = Enigo::new();
-
-    for parsed_command in command_vector{
-        match parsed_command{
-            ParsedCommand::LayoutKeyUse(key, button_action) => { 
-                match button_action {
-                    ButtonAction::Press => {
-                        enigo.key_down(Key::Layout(key));
-                    },
-                    ButtonAction::Release => {
-                        enigo.key_up(Key::Layout(key));
-                    },
-                    ButtonAction::Click => {
-                        enigo.key_click(Key::Layout(key));
-                    },
-                    ButtonAction::None => { println!("This should not happen! Doing nothing"); }
-                }
-             },
-            ParsedCommand::SpecialKeyUse(key, button_action) => { 
-                match button_action {
-                    ButtonAction::Press => {
-                        enigo.key_down(key);
-                    },
-                    ButtonAction::Release => {
-                        enigo.key_up(key);
-                    },
-                    ButtonAction::Click => {
-                        enigo.key_click(key);
-                    },
-                    ButtonAction::None => { println!("This should not happen! Doing nothing"); }
-                } 
-            },
-            ParsedCommand::KeySequence(sequence) => {
-                enigo.key_sequence(sequence.as_str());
-            },
-            ParsedCommand::MouseClick(mouse_button) => {
-                enigo.mouse_click(mouse_button);
-            },
-            ParsedCommand::MouseDown(mouse_button) => {
-                enigo.mouse_down(mouse_button);
-            },
-            ParsedCommand::MouseRelease(mouse_button) => {
-                enigo.mouse_up(mouse_button);
-            },
-            ParsedCommand::MouseMove{x, y} => {
-                enigo.mouse_move_to(x, y);
-            },
-            ParsedCommand::Wait(wait_time_ms) => {
-                let wait_duration = std::time::Duration::from_millis(wait_time_ms);
-                std::thread::sleep(wait_duration);
-            }
-        }
     }
 }
