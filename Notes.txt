@@ -50,4 +50,14 @@
 		https://crates.io/crates/phf
 
 
+- For command line argument parsing, I'll just use clap
+	- https://github.com/clap-rs/clap
+
+	- Tutorials:
+		https://blog.logrocket.com/command-line-argument-parsing-rust-using-clap/
+
+	- I'll use the Derive stuff for now.
+
+
+
 

@@ -1,47 +1,41 @@
 use enigo::*;
-use std::env;
+use std::time::Duration;
 use std::fs::File;
 use std::io::*;
 use std::path::Path;
+use clap::Parser;
 use crate::command_types::*;
 
 mod command_types;
 
+
+#[derive(Parser)]
+#[command(author, version, about = "", long_about = None)]
+struct Cli {
+    #[arg(short, long, value_name = "file")]
+    file_name: String,
+
+    #[arg(short, long, value_name = "start_delay_ms")]
+    start_delay: Option<String>
+}
+
 fn main() {
     println!("Reading arguments now");
 
-    let args: Vec<String> = env::args().collect();
+    let args = Cli::parse();
+    let file_name = args.file_name;
 
-    if !validate_args(&args) {
-        std::process::exit(1);
+    if let Some(start_delay) = args.start_delay {
+        if let Ok(parsed_time) = start_delay.parse::<u64>(){
+            let wait_before_start_ms: Duration = Duration::from_millis(parsed_time);
+            std::thread::sleep(wait_before_start_ms);
+        }
     }
-
-    let file_name = parse_args(args);
 
     let mut command_sequence: Vec<ParsedCommand> = vec![];
 
     read_input_file(&file_name, &mut command_sequence);
     execute_commands(command_sequence);
-}
-
-// true means the arguments are valid. Otherwise, the arguments are invalid and the program should stop
-fn validate_args(args: &Vec<String>) -> bool {
-
-    let num_args = args.len();
-    if num_args != 2 {
-        println!("There should be exactly 2 arguments, but instead there were {}", num_args);
-        return false;
-    }
-
-    return true;
-}
-
-fn parse_args(args: Vec<String>) -> String{
-    for argument in args.iter() {
-        println!("Read argument: {}", argument);
-    }
-
-    return args[1].clone();
 }
 
 fn read_input_file(file_name: &String, command_vector: &mut Vec<ParsedCommand>) {
