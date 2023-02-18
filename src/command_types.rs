@@ -15,7 +15,9 @@ pub enum ParsedCommand {
     MouseDown(MouseButton),
     MouseRelease(MouseButton),
     MouseMove{x: i32, y: i32},
-    Wait(u64)
+    Wait(u64),
+    ScreenCompareLayoutKeyClick{layout_key: char, input_file_path: String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32, match_threshold: f64},
+    ScreenCompareFunctionKeyClick{function_key: enigo::Key, input_file_path: String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32, match_threshold: f64}
 }
 
 enum ParseResult {
@@ -81,7 +83,7 @@ impl ParsedCommand {
         let split_line_key_and_action: Vec<&str> = cmd_string.split(" ").collect();
 
         if split_line_key_and_action.len() == 2 {
-            let parse_result_char = split_line_key_and_action[0].parse::<char>();
+            let key = split_line_key_and_action[0].parse::<char>().expect("Expected a character for first argument of layout_key");
             let parsed_button_action = split_line_key_and_action[1];
 
             let mut button_action: ButtonAction = ButtonAction::None;
@@ -95,13 +97,12 @@ impl ParsedCommand {
                 button_action = ButtonAction::Click;
             }
 
-            if let Ok(key) = parse_result_char {
-                match button_action
-                {
-                    ButtonAction::None => {},
-                    _ => { return (ParsedCommand::LayoutKeyUse(key, button_action), ParseResult::Success);}
-                }
+            match button_action
+            {
+                ButtonAction::None => {},
+                _ => { return (ParsedCommand::LayoutKeyUse(key, button_action), ParseResult::Success);}
             }
+            
         }
 
         return (ParsedCommand::Wait(1), ParseResult::Fail);
@@ -111,7 +112,7 @@ impl ParsedCommand {
         let split_line_key_and_action: Vec<&str> = cmd_string.split(" ").collect();
 
         if split_line_key_and_action.len() == 2 {
-            let parse_fn_key = split_line_key_and_action[0];
+            let fn_key = split_line_key_and_action[0];
             let parsed_button_action = split_line_key_and_action[1];
 
             let mut button_action: ButtonAction = ButtonAction::None;
@@ -125,7 +126,7 @@ impl ParsedCommand {
                 button_action = ButtonAction::Click;
             }
 
-            if let Some(enigo_key) = STR_TO_ENIGO_KEY_MAP.get(parse_fn_key) {
+            if let Some(enigo_key) = STR_TO_ENIGO_KEY_MAP.get(fn_key) {
                 match button_action
                 {
                     ButtonAction::None => {},
@@ -138,13 +139,9 @@ impl ParsedCommand {
     }
 
     fn parse_wait(cmd_string: &str) -> (ParsedCommand, ParseResult) {
-        let parse_result = cmd_string.parse::<u64>();
+        let wait_time = cmd_string.parse::<u64>().expect("");
 
-        if let Ok(wait_time) = parse_result {
-            return (ParsedCommand::Wait(wait_time), ParseResult::Success);
-        }
-
-        return (ParsedCommand::Wait(1), ParseResult::Fail);
+        return (ParsedCommand::Wait(wait_time), ParseResult::Success);
     }
 
     fn parse_mouse_click(cmd_string: &str) -> (ParsedCommand, ParseResult) {
@@ -196,12 +193,64 @@ impl ParsedCommand {
         let split_line_coordinates: Vec<&str> = cmd_string.split(" ").collect();
 
         if split_line_coordinates.len() == 2 {
-            let parse_result_x = split_line_coordinates[0].parse::<i32>();
-            let parse_result_y = split_line_coordinates[1].parse::<i32>();
+            let x = split_line_coordinates[0].parse::<i32>().expect("");
+            let y = split_line_coordinates[1].parse::<i32>().expect("");
 
-            if let (Ok(x), Ok(y)) = (parse_result_x, parse_result_y) {
-                return (ParsedCommand::MouseMove{x, y}, ParseResult::Success);
+            return (ParsedCommand::MouseMove{x, y}, ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_screen_compare_layout_key_click(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let split_line_coordinates: Vec<&str> = cmd_string.split(" ").collect();
+
+        println!("parse_screen_compare_layout_key_click: Number of Tokens = {}", split_line_coordinates.len());
+
+        if split_line_coordinates.len() >= 7 {
+            let layout_key = split_line_coordinates[0].parse::<char>().expect("layout_key parse failure");
+            let start_x = split_line_coordinates[1].parse::<i32>().expect("start_x read failure");
+            let start_y = split_line_coordinates[2].parse::<i32>().expect("start_y read failure");
+            let screen_capture_width = split_line_coordinates[3].parse::<u32>().expect("screen_capture_width read failure");
+            let screen_capture_height = split_line_coordinates[4].parse::<u32>().expect("screen_capture_height read failure");
+            let match_threshold = split_line_coordinates[5].parse::<f64>().expect("match_threshold read failure");
+
+            // Handle in case of an input path which includes spaces
+            let mut input_file_path: String = split_line_coordinates[6].to_string();
+            for i in 7..split_line_coordinates.len() {
+                input_file_path += " ";
+                input_file_path += split_line_coordinates[i];
             }
+
+            return (ParsedCommand::ScreenCompareLayoutKeyClick{layout_key, input_file_path, start_x, start_y, screen_capture_width, screen_capture_height, match_threshold}, ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
+    fn parse_screen_compare_function_key_click(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let split_line_coordinates: Vec<&str> = cmd_string.split(" ").collect();
+
+        println!("parse_screen_compare_function_key_click: Number of Tokens = {}", split_line_coordinates.len());
+
+        if split_line_coordinates.len() >= 7 {
+            let fn_key = split_line_coordinates[0];
+            let start_x = split_line_coordinates[1].parse::<i32>().expect("");
+            let start_y = split_line_coordinates[2].parse::<i32>().expect("");
+            let screen_capture_width = split_line_coordinates[3].parse::<u32>().expect("");
+            let screen_capture_height = split_line_coordinates[4].parse::<u32>().expect("");
+            let match_threshold = split_line_coordinates[5].parse::<f64>().expect("");
+
+            // Handle in case of an input path which includes spaces
+            let mut input_file_path: String = split_line_coordinates[6].to_string();
+            for i in 7..split_line_coordinates.len() {
+                input_file_path += " ";
+                input_file_path += split_line_coordinates[i];
+            }
+
+            let function_key = *STR_TO_ENIGO_KEY_MAP.get(fn_key).expect("");
+
+            return (ParsedCommand::ScreenCompareFunctionKeyClick{function_key, input_file_path, start_x, start_y, screen_capture_width, screen_capture_height, match_threshold}, ParseResult::Success);
         }
 
         return (ParsedCommand::Wait(1), ParseResult::Fail);
@@ -242,6 +291,14 @@ impl ParsedCommand {
         else if line.starts_with("mouse_move: ") {
             parse_fn = ParsedCommand::parse_mouse_move;
             beginning_sequence = "mouse_move: ";
+        }
+        else if line.starts_with("screen_compare_layout_key_click: ") {
+            parse_fn = ParsedCommand::parse_screen_compare_layout_key_click;
+            beginning_sequence = "screen_compare_layout_key_click: ";
+        }
+        else if line.starts_with("screen_compare_function_key_click: ") {
+            parse_fn = ParsedCommand::parse_screen_compare_function_key_click;
+            beginning_sequence = "screen_compare_function_key_click: ";
         }
         
         println!("parse_command_from_line: read {}", beginning_sequence);

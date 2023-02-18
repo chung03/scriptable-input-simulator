@@ -59,5 +59,15 @@
 	- I'll use the Derive stuff for now.
 
 
+- For images, I can use the following libraries:
+	- image, to do image comparisons and other basic manipulation
+		https://github.com/image-rs/image
+	
+	- screenshots, to get parts of the screen for further analysis
+		https://github.com/nashaofu/screenshots-rs
+		https://crates.io/crates/screenshots
+
+		- This stack overflow answer has a nice way of turning screenshots from this crate into Image objects from the image crate for comparison
+			https://stackoverflow.com/questions/73096821/take-a-screenshot-of-more-than-one-screen-connected-to-the-same-device-in-rust-l
 
 

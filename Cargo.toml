@@ -9,3 +9,5 @@ edition = "2021"
 enigo = {path = "D:\\Rust_Downloaded_GitHub\\enigo", version = "0.0.14"}
 phf = { version = "0.11.1", features = ["macros"] }
 clap = { version = "4.1.4", features = ["derive"] }
+screenshots = "0.5.2"
+image = "0.24.5"

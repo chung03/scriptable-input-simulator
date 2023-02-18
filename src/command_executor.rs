@@ -1,5 +1,6 @@
 use enigo::*;
 use crate::command_types::*; 
+use crate::screen_compare::*;
 
 pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
     let mut enigo = Enigo::new();
@@ -52,6 +53,46 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
             ParsedCommand::Wait(wait_time_ms) => {
                 let wait_duration = std::time::Duration::from_millis(*wait_time_ms);
                 std::thread::sleep(wait_duration);
+            },
+            ParsedCommand::ScreenCompareLayoutKeyClick{layout_key, 
+                input_file_path, 
+                start_x,
+                start_y,
+                screen_capture_width,
+                screen_capture_height,
+                match_threshold} => {
+                
+                    let match_percentage = compare_screen_to_image_file(input_file_path, 
+                        *start_x,
+                        *start_y,
+                        *screen_capture_width,
+                        *screen_capture_height);
+                
+                    if *match_threshold <= (match_percentage * 100.0) { 
+                        println!("successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 
+                        enigo.key_click(Key::Layout(*layout_key));
+                    }
+            },
+            ParsedCommand::ScreenCompareFunctionKeyClick{function_key, 
+                input_file_path, 
+                start_x,
+                start_y,
+                screen_capture_width,
+                screen_capture_height,
+                match_threshold} => {
+                
+                    let match_percentage = compare_screen_to_image_file(input_file_path, 
+                        *start_x,
+                        *start_y,
+                        *screen_capture_width,
+                        *screen_capture_height);
+                
+                        
+
+                    if *match_threshold <= (match_percentage * 100.0) { 
+                        println!("successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 
+                        enigo.key_click(*function_key);
+                    }
             }
         }
     }

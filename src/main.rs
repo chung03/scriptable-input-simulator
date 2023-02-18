@@ -1,4 +1,3 @@
-use enigo::*;
 use std::time::Duration;
 use std::fs::File;
 use std::io::*;
@@ -9,7 +8,7 @@ use crate::command_executor::*;
 
 mod command_types;
 mod command_executor;
-
+mod screen_compare;
 
 #[derive(Parser)]
 #[command(author, version, about = "", long_about = None)]
@@ -40,7 +39,7 @@ fn main() {
     read_input_file(&file_name, &mut command_sequence);
 
     for _i in 0.. args.arg_times_to_execute_commands {
-        command_executor::execute_commands(&command_sequence);
+        execute_commands(&command_sequence);
     }
 }
 
