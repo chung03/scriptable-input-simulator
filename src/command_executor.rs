@@ -86,8 +86,6 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                         *start_y,
                         *screen_capture_width,
                         *screen_capture_height);
-                
-                        
 
                     if *match_threshold <= (match_percentage * 100.0) { 
                         println!("successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 

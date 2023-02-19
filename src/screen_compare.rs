@@ -1,5 +1,5 @@
 use std::io::Cursor;
-use image::{self, GenericImageView, ImageBuffer, Pixel, RgbaImage, GenericImage};
+use image::{self, GenericImageView, RgbaImage, GenericImage};
 use screenshots::Screen;
 
 pub fn compare_screen_to_image_file(input_file_path: &String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32) -> f64 {
