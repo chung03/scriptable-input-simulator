@@ -1,11 +1,12 @@
 use std::io::Cursor;
 use image::{self, GenericImageView, RgbaImage, GenericImage};
 use screenshots::Screen;
+use log::{warn, info};
 
 pub fn compare_screen_to_image_file(input_file_path: &String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32) -> f64 {
     let screens = Screen::all().unwrap();
     let screen = screens[0];
-    println!("capturer {screen:?}");
+    info!(target: "commands_debug", "capturer {screen:?}");
 
     let screen_area = screen.capture_area(start_x, start_y, screen_capture_width, screen_capture_height).unwrap();
 
@@ -16,7 +17,7 @@ pub fn compare_screen_to_image_file(input_file_path: &String, start_x: i32, star
     let (width, height) = img1.dimensions();
 
     if screen_capture_width != width || screen_capture_height != height {
-        println!("The screen area specified and the image file specified do not match dimensions. Returning 0% match");
+        warn!(target: "commands_debug", "The screen area specified and the image file specified do not match dimensions. Returning 0% match");
         return 0.0;
     }
 

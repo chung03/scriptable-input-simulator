@@ -1,5 +1,6 @@
 use enigo::*;
 use phf::phf_map;
+use log::{error, info};
 
 pub enum ButtonAction {
     Press,
@@ -184,7 +185,7 @@ impl ParsedCommand {
     fn parse_screen_compare_key_click(cmd_string: &str) -> (ParsedCommand, ParseResult) {
         let split_line: Vec<&str> = cmd_string.split(" ").collect();
 
-        println!("parse_screen_compare_key_click: Number of Tokens = {}", split_line.len());
+        info!(target: "commands_debug", "parse_screen_compare_key_click: Number of Tokens = {}", split_line.len());
 
         if split_line.len() >= 7 {
             let start_x = split_line[1].parse::<i32>().expect("start_x read failure");
@@ -263,12 +264,12 @@ impl ParsedCommand {
             beginning_sequence = "screen_compare_key_click: ";
         }
         
-        println!("parse_command_from_line: read {}", beginning_sequence);
+        info!(target: "commands_debug", "parse_command_from_line: read {}", beginning_sequence);
 
         let split_line: Vec<&str> = line.split(beginning_sequence).collect();
 
         for split in &split_line {
-            println!("{}", split);
+            info!(target: "commands_debug", "{}", split);
         }
 
         if split_line.len() == 2 {
@@ -285,7 +286,7 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
 
     match parse_result{
         ParseResult::Fail => {
-            println!("The line is not formatted properly, not using it as a command");
+            error!(target: "commands_debug", "The line is not formatted properly, not using it as a command");
             return ParsedCommand::Wait(1);
         },
         _ => {

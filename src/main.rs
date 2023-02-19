@@ -3,6 +3,9 @@ use std::fs::File;
 use std::io::*;
 use std::path::Path;
 use clap::Parser;
+use log::{error, info};
+use log4rs;
+
 use crate::command_types::*;
 use crate::command_executor::*;
 
@@ -25,7 +28,8 @@ struct Cli {
 }
 
 fn main() {
-    println!("Reading arguments now");
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    info!(target: "commands_debug", "Reading arguments now");
 
     let args = Cli::parse();
     let file_name = args.arg_file_name;
@@ -60,6 +64,7 @@ fn read_input_file(file_name: &String, command_vector: &mut Vec<ParsedCommand>) 
             }
         },
         Err(error_reason) => {
+            error!(target: "commands_debug", "The input file {} could not be read: {}", full_name.display(), error_reason);
             panic!("The input file {} could not be read: {}", full_name.display(), error_reason);
         } 
     }

@@ -1,4 +1,6 @@
 use enigo::*;
+use log::{error, info};
+
 use crate::command_types::*; 
 use crate::screen_compare::*;
 
@@ -18,7 +20,7 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                     ButtonAction::Click => {
                         enigo.key_click(Key::Layout(*key));
                     },
-                    ButtonAction::None => { println!("This should not happen! Doing nothing"); }
+                    ButtonAction::None => { error!(target: "commands_debug", "This should not happen! Doing nothing"); }
                 }
              },
             ParsedCommand::SpecialKeyUse(key, button_action) => { 
@@ -32,7 +34,7 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                     ButtonAction::Click => {
                         enigo.key_click(*key);
                     },
-                    ButtonAction::None => { println!("This should not happen! Doing nothing"); }
+                    ButtonAction::None => { error!(target: "commands_debug", "This should not happen! Doing nothing"); }
                 } 
             },
             ParsedCommand::KeySequence(sequence) => {
@@ -69,7 +71,7 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                         *screen_capture_height);
                 
                     if *match_threshold <= (match_percentage * 100.0) { 
-                        println!("successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 
+                        info!(target: "commands_debug", "successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 
                         enigo.key_click(Key::Layout(*layout_key));
                     }
             },
@@ -88,7 +90,7 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                         *screen_capture_height);
 
                     if *match_threshold <= (match_percentage * 100.0) { 
-                        println!("successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 
+                        info!(target: "commands_debug", "successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 
                         enigo.key_click(*function_key);
                     }
             }

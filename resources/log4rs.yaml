@@ -1,0 +1,28 @@
+refresh_rate: 30 seconds
+appenders:
+  stdout:
+    kind: console
+  commands:
+    kind: rolling_file
+    path: "log/commands_debug.log"
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S)} | {({l}):5.5} | {f}:{L} — {m}{n}"
+    policy:
+      trigger:
+        kind: size
+        limit: 100 mb
+      roller:
+        kind: fixed_window
+        pattern: "log/commands_debug_{}.gz"
+        count: 5
+        base: 1
+root:
+  level: warn
+  appenders:
+    - stdout
+loggers:
+  commands_debug:
+    level: info
+    appenders:
+      - commands
+    additive: false
