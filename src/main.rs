@@ -28,7 +28,16 @@ struct Cli {
 }
 
 fn main() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    let mut current_log_file_path = std::env::current_exe().unwrap();
+    current_log_file_path.pop();
+    current_log_file_path.push("resources");
+    current_log_file_path.push("log4rs.yaml");
+
+    let log_initialization_result = log4rs::init_file(current_log_file_path, Default::default());
+    match log_initialization_result {
+        Ok(_) => {},
+        Err(reason) => { println!("Failed to initialize logging: {}\nContinuing without logging", reason); }
+    };
     info!(target: "commands_debug", "Reading arguments now");
 
     let args = Cli::parse();

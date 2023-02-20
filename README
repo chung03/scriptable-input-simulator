@@ -80,7 +80,7 @@ For more examples, please see the "examples" directory
 
 ---------------
 
-Usage: auto_clicker.exe [OPTIONS] --file_name <file>
+Usage: scriptable_input_simulator.exe [OPTIONS] --file_name <file>
 
 Options:
   -f, --file_name <file>
@@ -94,6 +94,6 @@ The file name option is required.
 
 Example usage:
 
-autoclicker.exe --file_name fishing_automation.txt -t 9999999
+scriptable_input_simulator.exe --file_name fishing_automation.txt -t 9999999
     - This program reads the script file fishing_automation.txt and repeats the commands 9999999 times
 
