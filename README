@@ -12,22 +12,8 @@ The following commands are accepted:
 key_sequence: <letters_to_type>
     - The program will type the letters specified in <letters_to_type>
 
-layout_key: <letter_key> <button_action>
-    - The program will do the <button_action> with the <letter_key> button on your keyboard
-    - <letter_key> can be one of the letters, numbers, or symbols, such as 'a', '3', or ';'
-    - <button_action> can be one of the following:
-        - press
-            - This action is the same as pushing the button down on your keyboard
-
-        - release
-            - This action is the same as releasing a pushed button on your keyboard
-
-        - click
-            - click is equivalent to pressing and then releasing soon after
-
-function_key: <function_key> <button_action>
-    - The program will do the <button_action> with the <function_key> button on your keyboard
-    - <function_key> can be one of the 
+key: <letter_key> <button_action>
+    - The program will do the <button_action> with the <key> button on your keyboard
     - <button_action> can be one of the following:
         - press
             - This action is the same as pushing the button down on your keyboard
@@ -71,62 +57,11 @@ mouse_move: <mouse_x> <mouse_y>
         - <mouse_y> should be between 0 and the vertical resolution of your screen
             - 0 is up. Higher numbers are down
 
-screen_compare_layout_key_click: <letter_key> <start_x> <start_y> <screen_capture_width> <screen_capture_height> <match_threshold> <image_file_path>
+screen_compare_key_click: <key> <start_x> <start_y> <screen_capture_width> <screen_capture_height> <match_threshold> <image_file_path>
     - The program will compare an area of the screen to the image at <image_file_path>
     - The compare area is a rectangle with width <screen_capture_width> and height <screen_capture_height>. The top left corner is at <start_x> <start_y>
     - The image comparison is done pixel-by-pixel. This means that if the screen compare area is off by a pixel or more, you will match less than expected
-    - If the images share at least <match_threshold>% pixels, then the program will click <letter_key>
-
-screen_compare_function_key_click: <function_key> <start_x> <start_y> <screen_capture_width> <screen_capture_height> <match_threshold> <image_file_path>
-    - The program will compare an area of the screen to the image at <image_file_path>
-    - The compare area is a rectangle with width <screen_capture_width> and height <screen_capture_height>. The top left corner is at <start_x> <start_y>
-    - The image comparison is done pixel-by-pixel. This means that if the screen compare area is off by a pixel or more, you will match less than expected
-    - If the images share at least <match_threshold>% pixels, then the program will click <function_key>
-
-
-The full list of Function keys is here:
-    alt 
-    back_space 
-    caps_lock 
-    control 
-    delete 
-    end 
-    escape 
-    left_arrow 
-    right_arrow 
-    up_arrow 
-    down_arrow 
-    f1 
-    f2 
-    f3 
-    f4 
-    f5 
-    f6 
-    f7 
-    f8 
-    f9 
-    f10 
-    f11 
-    f12 
-    f13 
-    f14 
-    f15 
-    f16 
-    f17 
-    f18 
-    f19 
-    f20 
-    home 
-    meta
-    - This key is the same as the "windows" key on Windows
-
-    option 
-    page_down 
-    page_up 
-    return 
-    shift 
-    space 
-    tab 
+    - If the images share at least <match_threshold>% pixels, then the program will click <key>
 
 
 Example of a file that moves a mouse to a location on the screen, clicks, then pressed a and then tabs and then presses b:
@@ -159,6 +94,6 @@ The file name option is required.
 
 Example usage:
 
-autoclicker.exe --file_name "D:\Dev Projects\Daemonic_Sword_fishing\fishing_automation.txt" -t 9999999
-    - This program reads the script file "D:\Dev Projects\Daemonic_Sword_fishing\fishing_automation.txt" and repeats the commands 9999999 times
+autoclicker.exe --file_name fishing_automation.txt -t 9999999
+    - This program reads the script file fishing_automation.txt and repeats the commands 9999999 times
 
