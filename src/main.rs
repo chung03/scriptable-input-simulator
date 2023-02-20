@@ -1,4 +1,5 @@
 use std::time::Duration;
+use std::env;
 use std::fs::File;
 use std::io::*;
 use std::path::Path;
@@ -28,12 +29,14 @@ struct Cli {
 }
 
 fn main() {
-    let mut current_log_file_path = std::env::current_exe().unwrap();
-    current_log_file_path.pop();
-    current_log_file_path.push("resources");
-    current_log_file_path.push("log4rs.yaml");
 
-    let log_initialization_result = log4rs::init_file(current_log_file_path, Default::default());
+    // Make logs relative to the executable's directory
+    let mut current_log_file_path = env::current_exe().unwrap();
+    current_log_file_path.pop();
+
+    env::set_current_dir(&current_log_file_path).expect("Cannot set current directory to the executable's directory");
+
+    let log_initialization_result = log4rs::init_file("resources/log4rs.yaml", Default::default());
     match log_initialization_result {
         Ok(_) => {},
         Err(reason) => { println!("Failed to initialize logging: {}\nContinuing without logging", reason); }
