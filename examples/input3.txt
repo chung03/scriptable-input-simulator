@@ -1,0 +1,9 @@
+mouse_move: 500 500
+wait: 100
+mouse_click: left
+wait: 100
+key: a click
+wait: 100
+key: tab click
+wait: 100
+key: b click

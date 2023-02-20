@@ -1,0 +1,6 @@
+mouse_move: 500 500
+wait: 100
+mouse_down: left
+wait: 100
+mouse_release: left
+key_sequence: one two three
