@@ -83,9 +83,7 @@ impl ParsedCommand {
     fn parse_key(cmd_string: &str) -> (ParsedCommand, ParseResult) {
         let split_line_key_and_action: Vec<&str> = cmd_string.split(" ").collect();
 
-        if split_line_key_and_action.len() == 2 {
-            //let key = split_line_key_and_action[0].parse::<char>().expect("Expected a character for first argument of layout_key");
-            
+        if split_line_key_and_action.len() == 2 {            
             let parsed_button_action = split_line_key_and_action[1];
 
             let mut button_action: ButtonAction = ButtonAction::None;
