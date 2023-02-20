@@ -14,7 +14,7 @@ The following commands are accepted:
 key_sequence: <letters_to_type>
     - The program will type the letters specified in <letters_to_type>
 
-key: <letter_key> <button_action>
+key: <key> <button_action>
     - The program will do the <button_action> with the <key> button on your keyboard
     - <button_action> can be one of the following:
         - press
@@ -72,11 +72,11 @@ mouse_move: 500 500
 wait: 100
 mouse_click: left
 wait: 100
-layout_key: a click
+key: a click
 wait: 100
 function_key: tab click
 wait: 100
-layout_key: b click
+key: b click
 
 For more examples, please see the "examples" directory
 
