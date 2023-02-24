@@ -1,9 +1,9 @@
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use std::env;
 use std::fs::File;
 use std::io::*;
 use std::path::Path;
-use clap::Parser;
+use clap::{Parser, ArgGroup};
 use log::{error, info};
 use log4rs;
 
@@ -16,16 +16,24 @@ mod screen_compare;
 
 #[derive(Parser)]
 #[command(author, version, about = "", long_about = None)]
+#[clap(group(
+        ArgGroup::new("repeat-commands")
+            .required(false)
+            .args(&["arg_times_to_execute_commands", "arg_duration_to_execute_commands"])
+    ))]
 struct Cli {
-    #[arg(short='f', long="file_name", value_name = "file")]
+    #[arg(short='f', long="file_name", value_name = "file", required = true)]
     arg_file_name: String,
 
-    #[arg(short='s', long="start_delay", value_name = "start_delay_ms", default_value_t=0)]
+    #[arg(short='s', long="start_delay", value_name = "start_delay_ms", required = false, default_value_t=0)]
     #[arg(long_help="The program will wait this long before executing the commands. This is in milliseconds")]
     arg_start_delay: u64,
 
-    #[arg(short='t', long="times_to_execute_commands", value_name = "times_to_execute_commands", default_value_t=1)]
-    arg_times_to_execute_commands: u64
+    #[arg(short='t', long="times_to_execute_commands", value_name = "times_to_execute_commands", required = false)]
+    arg_times_to_execute_commands: Option<u64>,
+
+    #[arg(short='d', long="duration_to_execute_commands", value_name = "duration_to_execute_commands_ms", required = false)]
+    arg_duration_to_execute_commands: Option<u64>
 }
 
 fn main() {
@@ -54,7 +62,21 @@ fn main() {
     let mut command_sequence: Vec<ParsedCommand> = vec![];
     read_input_file(&file_name, &mut command_sequence);
 
-    for _i in 0.. args.arg_times_to_execute_commands {
+    if let Some(times_to_execute_commands) = args.arg_times_to_execute_commands {  
+        for _i in 0.. times_to_execute_commands {
+            execute_commands(&command_sequence);
+        }
+    }
+    else if let Some(duration_to_execute_commands_ms) = args.arg_duration_to_execute_commands {
+        let execute_commands_duration: Duration = Duration::from_millis(duration_to_execute_commands_ms);
+        let now = SystemTime::now();
+        let execution_end_time = now + execute_commands_duration;
+
+        while SystemTime::now() <= execution_end_time {
+            execute_commands(&command_sequence);
+        }
+    }
+    else {
         execute_commands(&command_sequence);
     }
 }

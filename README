@@ -95,10 +95,17 @@ Usage: scriptable_input_simulator.exe [OPTIONS] --file_name <file>
 
 Options:
   -f, --file_name <file>
-  -s, --start_delay <start_delay_ms>                           The program will wait this long before executing the commands. This is in milliseconds [default: 0]
-  -t, --times_to_execute_commands <times_to_execute_commands>  [default: 1]
-  -h, --help                                                   Print help (see more with '--help')
-  -V, --version                                                Print version
+
+  -s, --start_delay <start_delay_ms>
+          The program will wait this long before executing the commands. This is in milliseconds [default: 0]
+  -t, --times_to_execute_commands <times_to_execute_commands>
+
+  -d, --duration_to_execute_commands <duration_to_execute_commands_ms>
+
+  -h, --help
+          Print help (see more with '--help')
+  -V, --version
+          Print version
 
 The file name option is required.
 
