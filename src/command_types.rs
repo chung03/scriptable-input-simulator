@@ -16,6 +16,7 @@ pub enum ParsedCommand {
     MouseDown(MouseButton),
     MouseRelease(MouseButton),
     MouseMove{x: i32, y: i32},
+    MouseMoveRelative{x: i32, y: i32},
     Wait(u64),
     ScreenCompareLayoutKeyClick{layout_key: char, input_file_path: String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32, match_threshold: f64},
     ScreenCompareFunctionKeyClick{function_key: enigo::Key, input_file_path: String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32, match_threshold: f64}
@@ -180,6 +181,19 @@ impl ParsedCommand {
         return (ParsedCommand::Wait(1), ParseResult::Fail);
     }
 
+    fn parse_mouse_move_relative(cmd_string: &str) -> (ParsedCommand, ParseResult) {
+        let split_line_coordinates: Vec<&str> = cmd_string.split(" ").collect();
+
+        if split_line_coordinates.len() == 2 {
+            let x = split_line_coordinates[0].parse::<i32>().expect("");
+            let y = split_line_coordinates[1].parse::<i32>().expect("");
+
+            return (ParsedCommand::MouseMoveRelative{x, y}, ParseResult::Success);
+        }
+
+        return (ParsedCommand::Wait(1), ParseResult::Fail);
+    }
+
     fn parse_screen_compare_key_click(cmd_string: &str) -> (ParsedCommand, ParseResult) {
         let split_line: Vec<&str> = cmd_string.split(" ").collect();
 
@@ -256,6 +270,10 @@ impl ParsedCommand {
         else if line.starts_with("mouse_move: ") {
             parse_fn = ParsedCommand::parse_mouse_move;
             beginning_sequence = "mouse_move: ";
+        }
+        else if line.starts_with("mouse_move_relative: ") {
+            parse_fn = ParsedCommand::parse_mouse_move_relative;
+            beginning_sequence = "mouse_move_relative: ";
         }
         else if line.starts_with("screen_compare_key_click: ") {
             parse_fn = ParsedCommand::parse_screen_compare_key_click;

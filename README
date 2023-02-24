@@ -59,6 +59,13 @@ mouse_move: <mouse_x> <mouse_y>
         - <mouse_y> should be between 0 and the vertical resolution of your screen
             - 0 is up. Higher numbers are down
 
+mouse_move_relative: <mouse_x> <mouse_y>
+    - Moves the mouse cursor relative to its current position
+    - Where the mouse moves is determined by the resolution of the screen. Please check your screen resolution when using this command
+        - For <mouse_x>, negative numbers are left. Positive numbers are right
+
+        - For <mouse_y>, negative numbers are up. Positive numbers are down
+
 screen_compare_key_click: <key> <start_x> <start_y> <screen_capture_width> <screen_capture_height> <match_threshold> <image_file_path>
     - The program will compare an area of the screen to the image at <image_file_path>
     - The compare area is a rectangle with width <screen_capture_width> and height <screen_capture_height>. The top left corner is at <start_x> <start_y>

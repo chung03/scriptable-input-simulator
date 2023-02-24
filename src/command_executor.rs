@@ -52,6 +52,9 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
             ParsedCommand::MouseMove{x, y} => {
                 enigo.mouse_move_to(*x, *y);
             },
+            ParsedCommand::MouseMoveRelative{x, y} => {
+                enigo.mouse_move_relative(*x, *y);
+            },
             ParsedCommand::Wait(wait_time_ms) => {
                 let wait_duration = std::time::Duration::from_millis(*wait_time_ms);
                 std::thread::sleep(wait_duration);
