@@ -66,9 +66,9 @@ mouse_move_relative: <mouse_x> <mouse_y>
 
         - For <mouse_y>, negative numbers are up. Positive numbers are down
 
-screen_compare_key_click: <key> <start_x> <start_y> <screen_capture_width> <screen_capture_height> <match_threshold> <image_file_path>
+screen_compare_key_click: <key> <start_x> <start_y> <match_threshold> <image_file_path>
     - The program will compare an area of the screen to the image at <image_file_path>
-    - The compare area is a rectangle with width <screen_capture_width> and height <screen_capture_height>. The top left corner is at <start_x> <start_y>
+    - The compare area is a rectangle with width and height matching the image at <image_file_path>. The top left corner is at <start_x> <start_y>
     - The image comparison is done pixel-by-pixel. This means that if the screen compare area is off by a pixel or more, you will match less than expected
     - If the images share at least <match_threshold>% pixels, then the program will click <key>
 

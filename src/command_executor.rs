@@ -23,7 +23,7 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                     ButtonAction::None => { error!(target: "commands_debug", "This should not happen! Doing nothing"); }
                 }
              },
-            ParsedCommand::SpecialKeyUse(key, button_action) => { 
+            ParsedCommand::FunctionKeyUse(key, button_action) => { 
                 match button_action {
                     ButtonAction::Press => {
                         enigo.key_down(*key);
@@ -63,15 +63,11 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                 input_file_path, 
                 start_x,
                 start_y,
-                screen_capture_width,
-                screen_capture_height,
                 match_threshold} => {
                 
                     let match_percentage = compare_screen_to_image_file(input_file_path, 
                         *start_x,
-                        *start_y,
-                        *screen_capture_width,
-                        *screen_capture_height);
+                        *start_y);
                 
                     if *match_threshold <= (match_percentage * 100.0) { 
                         info!(target: "commands_debug", "successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 
@@ -82,15 +78,11 @@ pub fn execute_commands(command_vector: &Vec<ParsedCommand>) {
                 input_file_path, 
                 start_x,
                 start_y,
-                screen_capture_width,
-                screen_capture_height,
                 match_threshold} => {
                 
                     let match_percentage = compare_screen_to_image_file(input_file_path, 
                         *start_x,
-                        *start_y,
-                        *screen_capture_width,
-                        *screen_capture_height);
+                        *start_y);
 
                     if *match_threshold <= (match_percentage * 100.0) { 
                         info!(target: "commands_debug", "successful match_percentage = {}, match_threadhold_percentage = {}", (match_percentage * 100.0), match_threshold); 

@@ -2,6 +2,7 @@ use enigo::*;
 use phf::phf_map;
 use log::{error, info};
 
+#[derive(PartialEq, Debug)]
 pub enum ButtonAction {
     Press,
     Release,
@@ -10,7 +11,7 @@ pub enum ButtonAction {
 }
 pub enum ParsedCommand {
     LayoutKeyUse(char, ButtonAction),
-    SpecialKeyUse(enigo::Key, ButtonAction),
+    FunctionKeyUse(enigo::Key, ButtonAction),
     KeySequence(String),
     MouseClick(MouseButton),
     MouseDown(MouseButton),
@@ -18,8 +19,8 @@ pub enum ParsedCommand {
     MouseMove{x: i32, y: i32},
     MouseMoveRelative{x: i32, y: i32},
     Wait(u64),
-    ScreenCompareLayoutKeyClick{layout_key: char, input_file_path: String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32, match_threshold: f64},
-    ScreenCompareFunctionKeyClick{function_key: enigo::Key, input_file_path: String, start_x: i32, start_y: i32, screen_capture_width: u32, screen_capture_height: u32, match_threshold: f64}
+    ScreenCompareLayoutKeyClick{layout_key: char, input_file_path: String, start_x: i32, start_y: i32, match_threshold: f64},
+    ScreenCompareFunctionKeyClick{function_key: enigo::Key, input_file_path: String, start_x: i32, start_y: i32, match_threshold: f64}
 }
 
 enum ParseResult {
@@ -108,7 +109,7 @@ impl ParsedCommand {
                         return (ParsedCommand::LayoutKeyUse(parsed_char, button_action), ParseResult::Success);
                     }
                     else if let Some(enigo_key) = STR_TO_ENIGO_KEY_MAP.get(split_line_key_and_action[0]) {
-                        return (ParsedCommand::SpecialKeyUse(*enigo_key, button_action), ParseResult::Success);
+                        return (ParsedCommand::FunctionKeyUse(*enigo_key, button_action), ParseResult::Success);
                     }
                 }
             }
@@ -199,16 +200,14 @@ impl ParsedCommand {
 
         info!(target: "commands_debug", "parse_screen_compare_key_click: Number of Tokens = {}", split_line.len());
 
-        if split_line.len() >= 7 {
+        if split_line.len() >= 4 {
             let start_x = split_line[1].parse::<i32>().expect("start_x read failure");
             let start_y = split_line[2].parse::<i32>().expect("start_y read failure");
-            let screen_capture_width = split_line[3].parse::<u32>().expect("screen_capture_width read failure");
-            let screen_capture_height = split_line[4].parse::<u32>().expect("screen_capture_height read failure");
-            let match_threshold = split_line[5].parse::<f64>().expect("match_threshold read failure");
+            let match_threshold = split_line[3].parse::<f64>().expect("match_threshold read failure");
 
             // Handle in case of an input path which includes spaces
-            let mut input_file_path: String = split_line[6].to_string();
-            for i in 7..split_line.len() {
+            let mut input_file_path: String = split_line[4].to_string();
+            for i in 5..split_line.len() {
                 input_file_path += " ";
                 input_file_path += split_line[i];
             }
@@ -219,9 +218,7 @@ impl ParsedCommand {
                 return (ParsedCommand::ScreenCompareLayoutKeyClick{layout_key, 
                                                                     input_file_path, 
                                                                     start_x, 
-                                                                    start_y, 
-                                                                    screen_capture_width, 
-                                                                    screen_capture_height, 
+                                                                    start_y,
                                                                     match_threshold}, ParseResult::Success);
             }
             else if let Some(function_key) = STR_TO_ENIGO_KEY_MAP.get(split_line[0]) {
@@ -229,9 +226,7 @@ impl ParsedCommand {
                 return (ParsedCommand::ScreenCompareFunctionKeyClick{function_key: *function_key, 
                                                                         input_file_path, 
                                                                         start_x, 
-                                                                        start_y, 
-                                                                        screen_capture_width,
-                                                                        screen_capture_height, 
+                                                                        start_y,
                                                                         match_threshold}, ParseResult::Success);
             }
         }
@@ -309,4 +304,173 @@ pub fn parse_command_from_line(line: &String) -> ParsedCommand{
             return return_parse;
         }
     }
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn test_parse_key_sequence() {
+        let line: String = String::from("key_sequence: abcdefg");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::KeySequence(key_sequence) = command {
+            assert_eq!(key_sequence, "abcdefg");
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+    
+    #[test]
+    fn test_parse_key_layout() {
+        let line: String = String::from("key: d click");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::LayoutKeyUse(parsed_key, button_action) = command {
+            assert_eq!(parsed_key, 'd');
+            assert_eq!(button_action, ButtonAction::Click);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_key_fn() {
+        let line: String = String::from("key: meta click");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::FunctionKeyUse(parsed_key, button_action) = command {
+            assert_eq!(parsed_key, enigo::Key::Meta);
+            assert_eq!(button_action, ButtonAction::Click);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_wait() {
+        let line: String = String::from("wait: 9");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::Wait(wait_time_ms) = command {
+            assert_eq!(wait_time_ms, 9);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_mouse_click() {
+        let line: String = String::from("mouse_click: left");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::MouseClick(mouse_button) = command {
+            assert_eq!(mouse_button, MouseButton::Left);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_mouse_down() {
+        let line: String = String::from("mouse_down: left");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::MouseDown(mouse_button) = command {
+            assert_eq!(mouse_button, MouseButton::Left);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_mouse_release() {
+        let line: String = String::from("mouse_release: left");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::MouseRelease(mouse_button) = command {
+            assert_eq!(mouse_button, MouseButton::Left);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_mouse_move() {
+        let line: String = String::from("mouse_move: 500 200");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::MouseMove{x, y} = command {
+            assert_eq!(x, 500);
+            assert_eq!(y, 200);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_mouse_move_relative() {
+        let line: String = String::from("mouse_move_relative: 300 100");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::MouseMoveRelative{x, y} = command {
+            assert_eq!(x, 300);
+            assert_eq!(y, 100);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_screen_compare_key_click_layout() {
+        let line: String = String::from("screen_compare_key_click: g 400 100 40 D:\\the space folder\\input.png");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::ScreenCompareLayoutKeyClick{layout_key, 
+            input_file_path, 
+            start_x,
+            start_y,
+            match_threshold} = command {
+            assert_eq!(layout_key, 'g');
+            assert_eq!(input_file_path, "D:\\the space folder\\input.png");
+            assert_eq!(start_x, 400);
+            assert_eq!(start_y, 100);
+            assert_eq!(match_threshold, 40.0);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
+    #[test]
+    fn test_parse_screen_compare_key_click_fn() {
+        let line: String = String::from("screen_compare_key_click: down_arrow 400 100 40 D:\\the space folder\\input.png");
+        let command: ParsedCommand = parse_command_from_line(&line);
+        
+        if let ParsedCommand::ScreenCompareFunctionKeyClick{function_key, 
+            input_file_path, 
+            start_x,
+            start_y,
+            match_threshold} = command {
+            assert_eq!(function_key, Key::DownArrow);
+            assert_eq!(input_file_path, "D:\\the space folder\\input.png");
+            assert_eq!(start_x, 400);
+            assert_eq!(start_y, 100);
+            assert_eq!(match_threshold, 40.0);
+        }
+        else {
+            panic!("The returned command was the wrong type!");
+        }
+    }
+
 }
